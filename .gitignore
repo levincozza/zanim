@@ -1,8 +1,26 @@
-main.exe
-main
+# Executables
+zanim
+zanim.exe
+
+# Object files and temporary build files
+*.exe
 *.o
 *.obj
+*.out
+*.bin
 *.dll
 *.dylib
 *.so
+*.temp
 build/
+
+# Generated LSP
+compile_commands.json
+
+# MacOS
+.DS_Store
+
+# Editor Files
+.vscode/
+*.swp
+*~
