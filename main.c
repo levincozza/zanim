@@ -3,8 +3,63 @@
 #include "raymath.h"
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #define MAX_COLUMNS 20
+#define MAX_KEYS_PRESSED 8
+
+#define MAX_GROUND_SPEED 320.0f
+#define MAX_GROUND_ACCEL 3200.0f // accel to MAX_SPEED in 0.1s
+#define MAX_AIR_SPEED 30.0f
+#define MAX_AIR_ACCEL 1000.0f
+
+#define GROUND_FRICTION 6.0f
+
+typedef struct {
+  Vector3 vel;
+  Vector3 pos;
+  bool canJump;
+  bool onGround;
+} PlayerState;
+
+typedef struct {
+  Vector2 viewAngles;
+  bool[MAX_KEYS_PRESSED] keysPressed; // [Forward, Backward, Right, Left,
+                                      //  Jump, 0, 0, 0]
+} PlayerInput;
+
+PlayerState applyPlayerInput(PlayerState state, PlayerInput input) {
+
+  // TODO: Structure the game loop more:
+  // Input: Process and validate inputs
+  // Update: Process inputs and state into new state 
+  // Render: Draw 3D, Draw 2D Hud
+  
+}
+
+  /*
+  * 
+  */
+
+Vector2 updateGroundVelocity(Vector2 wishDir, Vector2 vel, float frameTime) {
+  float frictionFactor = Clamp(1.0f - (GROUND_FRICTION * frameTime), 0, 1.0f);
+  vel = Vector2Scale(vel, frictionFactor);
+
+  float currentSpeed = Vector2Dot(vel, wishDir);
+
+  float addSpeed = Clamp(MAX_GROUND_SPEED - currentSpeed, 0, MAX_GROUND_ACCEL * frameTime);
+  vel = Vector2Add(vel, Vector2Scale(wishDir, addSpeed));
+
+  return vel;
+}
+
+Vector2 updateAirVelocity(Vector2 wishDir, Vector2 vel, float frameTime) {
+  float currentSpeed = Vector2Dot(vel, wishDir);
+  float addSpeed = Clamp(MAX_AIR_SPEED - currentSpeed, 0, MAX_AIR_ACCEL * frameTime);
+  vel = Vector2Add(vel, Vector2Scale(wishDir, addSpeed));
+
+  return vel;
+}
 
 int main(void) {
 
@@ -38,17 +93,22 @@ int main(void) {
 
   SetTargetFPS(120);
 
+  float playerForwardSpeed = 0.1f;
+  float playerSideSpeed = 0.1f;
+
   while (!WindowShouldClose()) {
     
-    Vector2 horizontalMoveDirNorm = Vector2Normalize((Vector2){
+    Vector2 wishDir = Vector2Normalize((Vector2){
       (float)(IsKeyDown(KEY_W) - IsKeyDown(KEY_S)),
       (float)(IsKeyDown(KEY_D) - IsKeyDown(KEY_A))
     });
 
+    Vector2 groundVelocity = updateGroundVelocity(wishDir, velocity, GetFrameTime());
+
     UpdateCameraPro(&camera,
       (Vector3){
-        horizontalMoveDirNorm.x*0.1f, // Forward-backward
-        horizontalMoveDirNorm.y*0.1f, // Right-left
+        0.0f, // Forward-backward
+        0.0f, // Right-left
         0.0f                                             // Up-down
       },
       (Vector3){
