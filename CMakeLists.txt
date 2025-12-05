@@ -1,40 +1,17 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.14)
 project(zanim C)
 
-# --- Platform-Specific Paths ---
-if(APPLE)
-    set(RAYLIB_INCLUDE_DIR "/opt/homebrew/Cellar/raylib/5.5/include")
-    set(RAYLIB_LIB_DIR "/opt/homebrew/Cellar/raylib/5.5/lib")
-elseif(WIN32)
-    set(RAYLIB_INCLUDE_DIR "C:/raylib/include")
-    set(RAYLIB_LIB_DIR "C:/raylib/lib")
-endif()
+# get raylib
+include(FetchContent)
+FetchContent_Declare(
+    raylib
+    GIT_REPOSITORY https://github.com/raysan5/raylib.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(raylib)
 
-# Add the include directory
-include_directories(${RAYLIB_INCLUDE_DIR})
-
-# --- Build Executable ---
-set(SOURCE_FILES main.c)
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-
-# --- Link Libraries ---
-if(APPLE)
-    target_link_libraries(${PROJECT_NAME} 
-        ${RAYLIB_LIB_DIR}/libraylib.a
-        "-framework OpenGL" 
-        "-framework Cocoa" 
-        "-framework IOKit" 
-        "-framework CoreVideo"
-    )
-elseif(WIN32)
-    target_link_libraries(${PROJECT_NAME} 
-        ${RAYLIB_LIB_DIR}/libraylib.a
-        opengl32 
-        gdi32 
-        winmm
-    )
-endif()
-
-# --- Generate LSP Configuration ---
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+# define executable
+add_executable(${PROJECT_NAME} main.c)
+# link raylib
+target_link_libraries(${PROJECT_NAME} raylib)
